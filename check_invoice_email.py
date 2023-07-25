@@ -345,10 +345,10 @@ class invoice_check:
                     # update upload record no errors
                     ###################################
                     self.update_upload_record('no error')
-
-            else:
+            
+            elif int(C5) > 0 or int(E5) > 0 and int(G5) > 0 : 
                 ################
-                # 資料上傳異常
+                # 資料上傳正常
                 ################
                 msg = '\n\n'
                 msg += now_time + '  \n'
@@ -357,7 +357,7 @@ class invoice_check:
                 msg += '回覆成功 : ' + str(int(E5)) + '\t 回覆異常 : ' + str(int(F5)) + '\n' 
                 msg += '存證成功 : ' + str(int(G5)) + '\t 存證異常 : ' + str(int(H5)) + '\n' 
                 msg += '傳輸差異數 : ' + str(int(J5)) + '\t 存證差異數 : ' + str(int(K5)) + '\n'
-                msg += '\n\t<< 資料上傳異常 >>'
+                msg += '\n\t<< 資料上傳正常 >>'
             
                 headers = {
                     "Authorization" : "Bearer " + token , 
@@ -377,7 +377,41 @@ class invoice_check:
                     ################################
                     # update upload record errors
                     ################################
+                    self.update_upload_record('no error')
+            
+            ################
+            # 資料上傳異常
+            ################
+            elif int(D5) > 0 or int(F5) > 0 or int(H5) > 0 :  
+                msg = '\n\n'
+                msg += now_time + '  \n'
+                msg += '電子發票歷史存證檢核表 \n\n' 
+                msg += '傳輸成功 : ' + str(int(C5)) + '\t 傳輸異常 : ' + str(int(D5)) + '\n'
+                msg += '回覆成功 : ' + str(int(E5)) + '\t 回覆異常 : ' + str(int(F5)) + '\n' 
+                msg += '存證成功 : ' + str(int(G5)) + '\t 存證異常 : ' + str(int(H5)) + '\n' 
+                msg += '傳輸差異數 : ' + str(int(J5)) + '\t 存證差異數 : ' + str(int(K5)) + '\n'
+                msg += '\n\t<< 資料上傳異常 >>'
+
+                headers = {
+                "Authorization" : "Bearer " + token , 
+                "Content-Type" : "application/x-www-form-urlencoded"
+                }
+
+                payload = {'message' : msg}
+                r = requests.post("https://notify-api.line.me/api/notify" , headers=headers , data=payload) 
+            
+                ########################
+                # success record file
+                ########################
+                if r.status_code == 200:
+                    msg += '\n------------------------------------------------'
+                    self.success_record_file(msg+"\n")
+
+                    ###################################
+                    # update upload record no errors
+                    ###################################
                     self.update_upload_record('error')
+
         
         except Exception as e:
             logging.info('< Error > line_notify : ' + str(e))
